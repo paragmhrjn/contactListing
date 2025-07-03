@@ -14,11 +14,11 @@ from model import Contact
 def get_contacts():
     contacts = Contact.query.all()
     # convert to json data
-    json_contacts = list(map(lambda x: x.to_json(), contacts))
+    json_contacts = [contact.to_json() for contact in contacts]
     return jsonify({"contacts": json_contacts})
 
 # create contact
-@app.route("/create_contact", method=["POST"])
+@app.route("/create_contact", methods=["POST"])
 def create_contact():
     first_name = request.json.get("firstName")
     last_name = request.json.get("lastName")
@@ -42,7 +42,7 @@ def create_contact():
     return jsonify({"message": "User Created!"}), 201
 
 # to update a contact
-@app.route("/update_contact/<int:user_id>", method=["PATCH"])
+@app.route("/update_contact/<int:user_id>", methods=["PATCH"])
 def update_contact(user_id):
     contact = contact.query.get(user_id)
     # condition to check contact for user
