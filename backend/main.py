@@ -44,7 +44,7 @@ def create_contact():
 # to update a contact
 @app.route("/update_contact/<int:user_id>", methods=["PATCH"])
 def update_contact(user_id):
-    contact = contact.query.get(user_id)
+    contact = Contact.query.get(user_id)
     # condition to check contact for user
     if not contact:
         return jsonify({"message": "User Not Found"}), 404

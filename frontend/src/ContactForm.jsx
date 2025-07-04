@@ -1,11 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
-const ContactForm = ({ onAdd, closeModal }) => {
+const ContactForm = ({ onAdd, closeModal, updateCallback, updateContact = {} }) => {
     const [newContact, setNewContact] = useState({
         firstName: '',
         lastName: '',
         email: '',
     });
+
+    const updating = Object.keys(updateContact).length > 0;
+
+    useEffect(() => {
+        if (updating) {
+            setNewContact({
+                firstName: updateContact.firstName || '',
+                lastName: updateContact.lastName || '',
+                email: updateContact.email || '',
+            });
+        } else {
+            setNewContact({
+                firstName: '',
+                lastName: '',
+                email: '',
+            });
+        }
+    }, [updateContact]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -20,31 +38,33 @@ const ContactForm = ({ onAdd, closeModal }) => {
         const data = {
             firstName: newContact.firstName,
             lastName: newContact.lastName,
-            email: newContact.email
+            email: newContact.email,
         };
-        const URL = "http://127.0.0.1:5000/create_contact";
+        const URL = updating
+            ? `http://127.0.0.1:5000/update_contact/${updateContact.id}`
+            : 'http://127.0.0.1:5000/create_contact';
         const options = {
-            method: "POST",
+            method: updating ? 'PATCH' : 'POST',
             headers: {
-                "Content-Type": "application/json",
+                'Content-Type': 'application/json',
             },
             body: JSON.stringify(data),
         };
-
         const response = await fetch(URL, options);
         if (response.status !== 201 && response.status !== 200) {
             const errorData = await response.json();
             alert(errorData.message);
+
         } else {
-            onAdd(newContact); // This will update the parent component with the new contact
+            updateCallback();
+            setNewContact({ firstName: '', lastName: '', email: '' }); // Reset form fields
+            closeModal(); // Close the modal
         }
-        // setNewContact({ firstName: '', lastName: '', email: '' }); // Reset form fields
-        closeModal(); // Close modal after submitting
     };
 
     return (
         <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow-lg w-96">
-            <h2 className="text-xl mb-4 font-semibold">Add New Contact</h2>
+            <h2 className="text-xl mb-4 font-semibold">{updating ? 'Update Contact' : 'Add New Contact'}</h2>
             <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700" htmlFor="firstName">
                     First Name:
@@ -97,7 +117,7 @@ const ContactForm = ({ onAdd, closeModal }) => {
                     type="submit"
                     className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
                 >
-                    Add Contact
+                    {updating ? 'Update Contact' : 'Add Contact'}
                 </button>
             </div>
         </form>
